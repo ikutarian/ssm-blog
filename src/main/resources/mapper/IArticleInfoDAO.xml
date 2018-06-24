@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.javaex.blog.dao.IArticleInfoDAO">
+
+    <resultMap id="ArticleInfoMap" type="cn.javaex.blog.view.ArticleInfo">
+        <result column="id" property="id" />
+        <result column="type_id" property="typeId"/>
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="content_text" property="contentText" />
+        <result column="cover" property="cover" />
+        <result column="view_count" property="viewCount" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" />
+        <association property="typeInfo" javaType="cn.javaex.blog.view.TypeInfo">
+            <id column="type_id" property="id"/>
+            <result column="type_name" property="name"/>
+        </association>
+    </resultMap>
+
+    <select id="list" resultMap="ArticleInfoMap">
+        SELECT
+            ai.id,
+            ai.title,
+            ai.cover,
+            ai.content_text,
+            ai.update_time,
+            ai.view_count,
+            ti.id AS type_id,
+            ti.name AS type_name
+        FROM
+            article_info ai,
+            type_info ti
+        WHERE
+            ai.type_id = ti.id
+            <if test="status != null and status != ''">AND ai.status = #{status}</if>
+            <if test="typeId != null and typeId != ''">AND ai.type_id = #{typeId}</if>
+            <if test="startDate != null and startDate != ''">
+                AND ai.update_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="keyWord != null and keyWord != ''">AND ai.title LIKE CONCAT('%', #{keyWord}, '%')</if>
+        ORDER BY
+            ai.update_time DESC
+    </select>
+
+    <select id="selectById" resultMap="ArticleInfoMap">
+        SELECT
+            article_info.*,
+            type_info.id AS type_id,
+            type_info.name AS type_name
+        FROM
+            article_info,
+            type_info
+        WHERE
+            article_info.id = #{id}
+            AND
+            article_info.type_id = type_info.id
+    </select>
+
+    <insert id="insert">
+        INSERT INTO article_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="typeId != null and typeId != ''">type_id,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="content != null and content != ''">content,</if>
+            <if test="contentText != null and contentText != ''">content_text,</if>
+            <if test="cover != null and cover != ''">cover,</if>
+            <if test="viewCount != null and viewCount != ''">view_count,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="status != null and status != ''">status,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="typeId != null and typeId != ''">#{typeId},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="content != null and content != ''">#{content},</if>
+            <if test="contentText != null and contentText != ''">#{contentText},</if>
+            <if test="cover != null and cover != ''">#{cover},</if>
+            <if test="viewCount != null and viewCount != ''">#{viewCount},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="status != null and status != ''">#{status},</if>
+        </trim>
+    </insert>
+
+    <update id="update">
+        UPDATE article_info
+        <set>
+            <if test="typeId != null and typeId != ''">type_id = #{typeId},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="content != null and content != ''">content = #{content},</if>
+            <if test="contentText != null and contentText != ''">content_text = #{contentText},</if>
+            <if test="cover != null and cover != ''">cover = #{cover},</if>
+            <if test="viewCount != null and viewCount != ''">view_count = #{viewCount},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+        </set>
+        WHERE
+            id = #{id}
+    </update>
+
+    <update id="updateTypeId">
+        UPDATE article_info
+        <set>
+            <if test="typeId != null and typeId != ''">type_id = #{typeId},</if>
+        </set>
+        WHERE
+            id IN
+            <foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </update>
+
+    <update id="updateStatus">
+        UPDATE article_info
+        <set>
+            <if test="status != null and status != ''">status = #{status},</if>
+        </set>
+        WHERE
+            id IN
+            <foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </update>
+
+    <delete id="delete">
+        DELETE FROM
+            article_info
+        WHERE
+            id IN
+            <foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </delete>
+
+    <select id="countByTypeId" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            article_info
+        WHERE
+            status = #{status}
+            AND
+            type_id IN
+            <foreach collection="typeIdArr" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
+
+    <delete id="deleteByTypeId">
+        DELETE FROM
+            article_info
+        WHERE
+            type_id IN
+            <foreach collection="typeIdArr" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </delete>
+
+    <update id="updateViewCount">
+        UPDATE article_info
+        SET
+            view_count = #{viewCount}
+        WHERE
+            id = #{id}
+    </update>
+
+</mapper>

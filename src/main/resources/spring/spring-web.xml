@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <mvc:annotation-driven/>
+
+    <bean id="viewResolver"
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/page/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <mvc:interceptors>
+        <!-- 登陆认证拦截器 -->
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean class="cn.javaex.blog.interceptor.QingInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!-- 全局异常处理器 -->
+    <bean class="cn.javaex.blog.exception.QingExceptionResolver"/>
+
+    <!-- 文件上传 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 设置默认编码 -->
+        <property name="defaultEncoding" value="utf-8"/>
+        <!-- 上传文件总的大小最大为5M-->
+        <property name="maxUploadSize" value="5242440"/>
+    </bean>
+
+    <context:component-scan base-package="cn.javaex.blog"/>
+
+</beans>
